@@ -24,6 +24,10 @@ def http_get_json(url, retries=3):
             if r.status_code == 429:
                 time.sleep(float(r.headers.get("Retry-After", 3)))
                 continue
+            if r.status_code >= 400:
+                print(f"HTTP {r.status_code} ({url}): {r.text[:300]}")
+                if r.status_code in (401, 403):
+                    return None
             r.raise_for_status()
             body = r.json()
             if body.get("result") == "error":
