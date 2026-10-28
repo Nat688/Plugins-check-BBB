@@ -1,0 +1,31 @@
+name: Check BuiltByBit Updates
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: bbb-check
+  cancel-in-progress: false
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - name: Run script
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          BBB_TOKEN: ${{ secrets.BBB_TOKEN }}
+        run: python script.py
+      - name: Save cache
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update versions cache [skip ci]"
+          file_pattern: 'last_versions.json'
